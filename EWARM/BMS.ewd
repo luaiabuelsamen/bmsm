@@ -2,7 +2,7 @@
 <project>
 	<fileVersion>3</fileVersion>
 	<configuration>
-		<name>BMS</name>
+		<name>bms</name>
 		<toolchain>
 			<name>ARM</name>
 		</toolchain>

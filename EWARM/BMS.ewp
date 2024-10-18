@@ -2,7 +2,7 @@
 <project>
   <fileVersion>3</fileVersion>
   <configuration>
-    <name>BMS</name>
+    <name>bms</name>
     <toolchain>
       <name>ARM</name>
     </toolchain>
@@ -16,15 +16,15 @@
         <debug>1</debug>
         <option>
           <name>ExePath</name>
-          <state>BMS/Exe</state>
+          <state>bms/Exe</state>
         </option>
         <option>
           <name>ObjPath</name>
-          <state>BMS/Obj</state>
+          <state>bms/Obj</state>
         </option>
         <option>
           <name>ListPath</name>
-          <state>BMS/List</state>
+          <state>bms/List</state>
         </option>
         <option>
           <name>GEndianMode</name>
@@ -662,7 +662,7 @@
         </option>
         <option>
           <name>OOCOutputFile</name>
-          <state>BMS.hex</state>
+          <state>bms.hex</state>
         </option>
         <option>
           <name>OOCCommandLineProducer</name>
@@ -705,7 +705,7 @@
         <debug>1</debug>
         <option>
           <name>IlinkOutputFile</name>
-          <state>BMS.out</state>
+          <state>bms.out</state>
         </option>
         <option>
           <name>IlinkLibIOConfig</name>
@@ -1157,9 +1157,6 @@
       </file>
       <file>
         <name>$PROJ_DIR$/../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_i2c_ex.c</name>
-      </file>
-      <file>
-        <name>$PROJ_DIR$/../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_spi.c</name>
       </file>
       <file>
         <name>$PROJ_DIR$/../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_tim.c</name>

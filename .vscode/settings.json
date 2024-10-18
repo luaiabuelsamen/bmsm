@@ -1,7 +1,12 @@
 {
     "files.associations": {
         "cmsis_os.h": "c",
-        "stm32f4xx_hal_adc.h": "c"
+        "stm32f4xx_hal_adc.h": "c",
+        "currentmonitoring.h": "c",
+        "tempmonitoring.h": "c",
+        "stdint.h": "c",
+        "batterymanagement.h": "c",
+        "cancommunication.h": "c"
     },
     "stm32-for-vscode.openOCDPath": false,
     "stm32-for-vscode.armToolchainPath": false
