@@ -59,12 +59,40 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define B1_Pin GPIO_PIN_13
 #define B1_GPIO_Port GPIOC
+
+#define ADC_Voltage_Pin GPIO_PIN_0
+#define ADC_Voltage_Port GPIOA
+#define ADC_Current_Pin GPIO_PIN_1
+#define ADC_Current_Port GPIOA
+
+#define Charge_Control_Pin GPIO_PIN_4
+#define Charge_Control_Port GPIOA
+#define Discharge_Control_Pin GPIO_PIN_5
+#define Discharge_Control_Port GPIOA
+
+#define CAN1_TX_Pin GPIO_PIN_12
+#define CAN1_TX_GPIO_Port GPIOA
+#define CAN1_RX_Pin GPIO_PIN_11
+#define CAN1_RX_GPIO_Port GPIOA
+
+#define I2C1_SDA_Pin GPIO_PIN_7
+#define I2C1_SDA_GPIO_Port GPIOB
+#define I2C1_SCL_Pin GPIO_PIN_6
+#define I2C1_SCL_GPIO_Port GPIOB
+
+#define Overvoltage_Protection_Pin GPIO_PIN_8
+#define Overvoltage_Protection_Port GPIOB
+#define Overtemperature_Protection_Pin GPIO_PIN_9
+#define Overtemperature_Protection_Port GPIOB
+
 #define USART_TX_Pin GPIO_PIN_2
 #define USART_TX_GPIO_Port GPIOA
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
+
 #define LD2_Pin GPIO_PIN_5
 #define LD2_GPIO_Port GPIOA
+
 #define TMS_Pin GPIO_PIN_13
 #define TMS_GPIO_Port GPIOA
 #define TCK_Pin GPIO_PIN_14
@@ -73,6 +101,9 @@ void Error_Handler(void);
 #define SWO_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+
+// Define the I2C address for your temperature sensor
+#define TEMP_SENSOR_ADDRESS 0x48  // Replace with your actual sensor's I2C address
 
 /* USER CODE END Private defines */
 
