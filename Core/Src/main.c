@@ -44,16 +44,18 @@ int main(void) {
     MX_UART4_Init();
     MX_USART2_UART_Init();
 
+    // Initialize charge control and CAN communication
     chargeControlInit();
     canInit();
 
+    // Initialize FreeRTOS and create tasks
     osKernelInitialize();
-    defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
-    osKernelStart();
+    MX_FREERTOS_Init();  // Initialize FreeRTOS tasks and configuration
+    osKernelStart();     // Start the FreeRTOS scheduler
 
+    // Infinite loop removed, FreeRTOS handles task scheduling
     while (1) {
-        processBmsData();
-        HAL_Delay(1000);
+        // This should not execute as the FreeRTOS scheduler has taken over
     }
 }
 

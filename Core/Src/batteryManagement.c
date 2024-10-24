@@ -1,33 +1,28 @@
 #include "batteryManagement.h"
 #include "main.h"
+#include "cellBalancing.h"
 #include <stdint.h>
 
-extern ADC_HandleTypeDef hadc1;
-extern I2C_HandleTypeDef hi2c1;
+// Initialize the battery pack structure
+void batteryPackInit(void) {
+    for (uint8_t i = 0; i < NUM_CELLS; i++) {
+        batteryPack.cells[i].channel = ADC_CHANNEL_0 + i;  // Assign channels
+        batteryPack.cells[i].voltage = 0.0f;               // Initialize voltages to 0
+    }
+    batteryPack.totalVoltage = 0.0f;
+    batteryPack.averageVoltage = 0.0f;
+    batteryPack.current = 0.0f;
+    batteryPack.temperature = 0.0f;
 
-void chargeControlInit(void) {
-    // GPIOs for charge/discharge are already initialized
+    // Initialize safety flags
+    batterySafety.overVoltageProtection = 0;
+    batterySafety.overTempProtection = 0;
 }
 
-void enableCharging(void) {
-    HAL_GPIO_WritePin(Charge_Control_Port, Charge_Control_Pin, GPIO_PIN_SET);
-}
-
-void disableCharging(void) {
-    HAL_GPIO_WritePin(Charge_Control_Port, Charge_Control_Pin, GPIO_PIN_RESET);
-}
-
-void enableDischarging(void) {
-    HAL_GPIO_WritePin(Discharge_Control_Port, Discharge_Control_Pin, GPIO_PIN_SET);
-}
-
-void disableDischarging(void) {
-    HAL_GPIO_WritePin(Discharge_Control_Port, Discharge_Control_Pin, GPIO_PIN_RESET);
-}
-
-float readBatteryVoltage(void) {
+// Function to read the voltage of a single cell
+float readCellVoltage(uint8_t channel) {
     ADC_ChannelConfTypeDef sConfig = {0};
-    sConfig.Channel = ADC_CHANNEL_0;
+    sConfig.Channel = channel;
     sConfig.Rank = 1;
     sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
 
@@ -40,12 +35,37 @@ float readBatteryVoltage(void) {
     uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
     HAL_ADC_Stop(&hadc1);
 
-    return (adcValue * 3.3f) / 4096.0f; // Convert ADC value to voltage
+    // Convert ADC value to voltage (assuming 12-bit ADC)
+    return (adcValue * 3.3f) / 4096.0f;
 }
 
+// Function to update all cell voltages and calculate total and average voltages
+void updateBatteryPackVoltages(void) {
+    float totalVoltage = 0.0f;
+    for (uint8_t i = 0; i < NUM_CELLS; i++) {
+        batteryPack.cells[i].voltage = readCellVoltage(batteryPack.cells[i].channel);
+        totalVoltage += batteryPack.cells[i].voltage;
+    }
+    batteryPack.totalVoltage = totalVoltage;
+    batteryPack.averageVoltage = totalVoltage / NUM_CELLS;
+}
+
+// Function to estimate SoC based on the average cell voltage
+float estimateSoc(void) {
+    updateBatteryPackVoltages();
+
+    // Simple linear SoC estimation based on average voltage of all cells
+    if (batteryPack.averageVoltage >= MAX_CELL_VOLTAGE) return 100.0f;
+    if (batteryPack.averageVoltage <= MIN_CELL_VOLTAGE) return 0.0f;
+
+    return ((batteryPack.averageVoltage - MIN_CELL_VOLTAGE) / 
+            (MAX_CELL_VOLTAGE - MIN_CELL_VOLTAGE)) * 100.0f;
+}
+
+// Function to read battery current from ADC (assuming current sense resistor)
 float readBatteryCurrent(void) {
     ADC_ChannelConfTypeDef sConfig = {0};
-    sConfig.Channel = ADC_CHANNEL_1;
+    sConfig.Channel = ADC_CHANNEL_1;  // Assuming current is on ADC_CHANNEL_1
     sConfig.Rank = 1;
     sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
 
@@ -58,9 +78,12 @@ float readBatteryCurrent(void) {
     uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
     HAL_ADC_Stop(&hadc1);
 
-    return (adcValue * 100.0f) / 4096.0f; // Convert ADC value to current
+    // Convert ADC value to current
+    batteryPack.current = (adcValue * 100.0f) / 4096.0f;
+    return batteryPack.current;
 }
 
+// Function to read battery temperature from an I2C sensor
 float readBatteryTemperature(void) {
     uint8_t tempRegister = 0x00;
     uint8_t tempData[2] = {0};
@@ -71,21 +94,54 @@ float readBatteryTemperature(void) {
     int16_t rawTemperature = (tempData[0] << 8) | tempData[1];
     rawTemperature >>= 4;
 
-    return rawTemperature * 0.0625f; // Convert raw value to temperature
+    batteryPack.temperature = rawTemperature * 0.0625f;
+    return batteryPack.temperature;
 }
 
-float estimateSoc(void) {
-    float voltage = readBatteryVoltage();
-    if (voltage >= 4.2f) return 100.0f;
-    if (voltage <= 3.0f) return 0.0f;
-    return ((voltage - 3.0f) / (4.2f - 3.0f)) * 100.0f;
+// Safety check function
+void checkSafety(void) {
+    // Check overvoltage for each cell
+    for (uint8_t i = 0; i < NUM_CELLS; i++) {
+        if (batteryPack.cells[i].voltage > MAX_CELL_VOLTAGE) {
+            batterySafety.overVoltageProtection = 1;
+            HAL_GPIO_WritePin(Overvoltage_Protection_Port, Overvoltage_Protection_Pin, GPIO_PIN_SET);
+            return;
+        }
+    }
+
+    // Check temperature
+    readBatteryTemperature();
+    if (batteryPack.temperature > MAX_SAFE_TEMPERATURE) {
+        batterySafety.overTempProtection = 1;
+        HAL_GPIO_WritePin(Overtemperature_Protection_Port, Overtemperature_Protection_Pin, GPIO_PIN_SET);
+    }
 }
 
-// Safety management
-void activateOvervoltageProtection(void) {
-    HAL_GPIO_WritePin(Overvoltage_Protection_Port, Overvoltage_Protection_Pin, GPIO_PIN_SET);
+// Function to enable or disable charging based on safety status
+void controlCharging(void) {
+    if (batterySafety.overVoltageProtection || batterySafety.overTempProtection) {
+        disableCharging();
+    } else {
+        enableCharging();
+    }
 }
 
-void activateOvertemperatureProtection(void) {
-    HAL_GPIO_WritePin(Overtemperature_Protection_Port, Overtemperature_Protection_Pin, GPIO_PIN_SET);
+// Enable charging
+void enableCharging(void) {
+    HAL_GPIO_WritePin(Charge_Control_Port, Charge_Control_Pin, GPIO_PIN_SET);
 }
+
+// Disable charging
+void disableCharging(void) {
+    HAL_GPIO_WritePin(Charge_Control_Port, Charge_Control_Pin, GPIO_PIN_RESET);
+}
+
+// Main battery management loop
+void batteryManagementLoop(void) {
+    updateBatteryPackVoltages();
+    readBatteryCurrent();
+    checkSafety();
+    controlCharging();
+    balanceCells();
+}
+

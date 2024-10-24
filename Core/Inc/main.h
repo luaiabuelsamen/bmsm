@@ -1,23 +1,3 @@
-/* USER CODE BEGIN Header */
-/**
-  ******************************************************************************
-  * @file           : main.h
-  * @brief          : Header for main.c file.
-  *                   This file contains the common defines of the application.
-  ******************************************************************************
-  * @attention
-  *
-  * Copyright (c) 2024 STMicroelectronics.
-  * All rights reserved.
-  *
-  * This software is licensed under terms that can be found in the LICENSE file
-  * in the root directory of this software component.
-  * If no LICENSE file comes with this software, it is provided AS-IS.
-  *
-  ******************************************************************************
-  */
-/* USER CODE END Header */
-
 /* Define to prevent recursive inclusion -------------------------------------*/
 #ifndef __MAIN_H
 #define __MAIN_H
@@ -28,33 +8,10 @@ extern "C" {
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f4xx_hal.h"
-
-/* Private includes ----------------------------------------------------------*/
-/* USER CODE BEGIN Includes */
-
-/* USER CODE END Includes */
-
-/* Exported types ------------------------------------------------------------*/
-/* USER CODE BEGIN ET */
-
-/* USER CODE END ET */
-
-/* Exported constants --------------------------------------------------------*/
-/* USER CODE BEGIN EC */
-
-/* USER CODE END EC */
-
-/* Exported macro ------------------------------------------------------------*/
-/* USER CODE BEGIN EM */
-
-/* USER CODE END EM */
+#include <stdint.h>
 
 /* Exported functions prototypes ---------------------------------------------*/
 void Error_Handler(void);
-
-/* USER CODE BEGIN EFP */
-
-/* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
 #define B1_Pin GPIO_PIN_13
@@ -90,7 +47,7 @@ void Error_Handler(void);
 #define USART_RX_Pin GPIO_PIN_3
 #define USART_RX_GPIO_Port GPIOA
 
-#define LD2_Pin GPIO_PIN_5
+#define LD2_Pin GPIO_PIN_6
 #define LD2_GPIO_Port GPIOA
 
 #define TMS_Pin GPIO_PIN_13
@@ -101,9 +58,26 @@ void Error_Handler(void);
 #define SWO_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define TEMP_SENSOR_ADDRESS 0x48  // Update to your sensor's actual I2C address
 
-// Define the I2C address for your temperature sensor
-#define TEMP_SENSOR_ADDRESS 0x48  // Replace with your actual sensor's I2C address
+// Define the balancing control pins for each cell
+#define Balance_Control_Pin_Cell1 GPIO_PIN_0
+#define Balance_Control_Port_Cell1 GPIOB
+
+#define Balance_Control_Pin_Cell2 GPIO_PIN_1
+#define Balance_Control_Port_Cell2 GPIOB
+
+#define Balance_Control_Pin_Cell3 GPIO_PIN_2
+#define Balance_Control_Port_Cell3 GPIOB
+
+#define Balance_Control_Pin_Cell4 GPIO_PIN_3
+#define Balance_Control_Port_Cell4 GPIOB
+
+#define Balance_Control_Pin_Cell5 GPIO_PIN_4
+#define Balance_Control_Port_Cell5 GPIOB
+
+#define Balance_Control_Pin_Cell6 GPIO_PIN_5
+#define Balance_Control_Port_Cell6 GPIOB
 
 /* USER CODE END Private defines */
 
