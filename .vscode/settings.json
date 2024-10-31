@@ -15,5 +15,6 @@
         "stm32f4xx_hal_can.h": "c"
     },
     "stm32-for-vscode.openOCDPath": false,
-    "stm32-for-vscode.armToolchainPath": false
+    "stm32-for-vscode.armToolchainPath": false,
+    "cmake.sourceDirectory": "/Users/luaiabuelsamen/Desktop/bmsm/Drivers/CMSIS/DSP/Source/FilteringFunctions"
 }

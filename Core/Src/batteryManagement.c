@@ -3,6 +3,88 @@
 #include "cellBalancing.h"
 #include <stdint.h>
 
+#define BUFFER_SIZE 10
+
+typedef struct {
+    float buffer[BUFFER_SIZE];
+    uint8_t head;
+    uint8_t count;
+    float sum;
+} CircularBuffer;
+
+CircularBuffer voltageBuffer = { .head = 0, .count = 0, .sum = 0.0f };
+
+typedef struct {
+    uint8_t channel;
+    float voltage;
+} Cell;
+
+typedef struct {
+    Cell cells[NUM_CELLS];
+    float totalVoltage;
+    float averageVoltage;
+} BatteryPack;
+
+BatteryPack batteryPack;
+
+void batteryPackInit(void) {
+    for (uint8_t i = 0; i < NUM_CELLS; i++) {
+        batteryPack.cells[i].channel = ADC_CHANNEL_0 + i;
+        batteryPack.cells[i].voltage = 0.0f;
+    }
+    batteryPack.totalVoltage = 0.0f;
+    batteryPack.averageVoltage = 0.0f;
+}
+
+float readCellVoltage(uint8_t channel) {
+    ADC_ChannelConfTypeDef sConfig = {0};
+    sConfig.Channel = channel;
+    sConfig.Rank = 1;
+    sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
+
+    if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK) {
+        Error_Handler();
+    }
+
+    HAL_ADC_Start(&hadc1);
+    HAL_ADC_PollForConversion(&hadc1, HAL_MAX_DELAY);
+    uint32_t adcValue = HAL_ADC_GetValue(&hadc1);
+    HAL_ADC_Stop(&hadc1);
+
+    return (adcValue * 3.3f) / 4096.0f;
+}
+
+void addVoltageToBuffer(CircularBuffer *cb, float newVoltage) {
+    if (cb->count < BUFFER_SIZE) {
+        cb->buffer[cb->head] = newVoltage;
+        cb->sum += newVoltage;
+        cb->count++;
+    } else {
+        cb->sum -= cb->buffer[cb->head];
+        cb->buffer[cb->head] = newVoltage;
+        cb->sum += newVoltage;
+    }
+    cb->head = (cb->head + 1) % BUFFER_SIZE;
+}
+
+float calculateAverageVoltage(CircularBuffer *cb) {
+    return cb->count == 0 ? 0.0f : cb->sum / cb->count;
+}
+
+void updateBatteryPackVoltages(void) {
+    float totalVoltage = 0.0f;
+
+    for (uint8_t i = 0; i < NUM_CELLS; i++) {
+        float cellVoltage = readCellVoltage(batteryPack.cells[i].channel);
+        batteryPack.cells[i].voltage = cellVoltage;
+        totalVoltage += cellVoltage;
+        addVoltageToBuffer(&voltageBuffer, cellVoltage);
+    }
+
+    batteryPack.totalVoltage = totalVoltage;
+    batteryPack.averageVoltage = calculateAverageVoltage(&voltageBuffer);
+}
+
 // Initialize the battery pack structure
 void batteryPackInit(void) {
     for (uint8_t i = 0; i < NUM_CELLS; i++) {
@@ -39,17 +121,6 @@ float readCellVoltage(uint8_t channel) {
     return (adcValue * 3.3f) / 4096.0f;
 }
 
-// Function to update all cell voltages and calculate total and average voltages
-void updateBatteryPackVoltages(void) {
-    float totalVoltage = 0.0f;
-    for (uint8_t i = 0; i < NUM_CELLS; i++) {
-        batteryPack.cells[i].voltage = readCellVoltage(batteryPack.cells[i].channel);
-        totalVoltage += batteryPack.cells[i].voltage;
-    }
-    batteryPack.totalVoltage = totalVoltage;
-    batteryPack.averageVoltage = totalVoltage / NUM_CELLS;
-}
-
 // Function to estimate SoC based on the average cell voltage
 float estimateSoc(void) {
     updateBatteryPackVoltages();
@@ -65,7 +136,7 @@ float estimateSoc(void) {
 // Function to read battery current from ADC (assuming current sense resistor)
 float readBatteryCurrent(void) {
     ADC_ChannelConfTypeDef sConfig = {0};
-    sConfig.Channel = ADC_CHANNEL_1;  // Assuming current is on ADC_CHANNEL_1
+    sConfig.Channel = ADC_CHANNEL_1;
     sConfig.Rank = 1;
     sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
 
