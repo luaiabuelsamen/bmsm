@@ -61,13 +61,13 @@ graph TD;
 ### **3.3 Control Strategy**
 - **Charge/Discharge Control**
   - Controlled using MOSFET switches.
-  - Based on SoC (State of Charge) and safety conditions.
+  - Based on SoC  and safety conditions.
 
 - **Cell Balancing**
   - Passive balancing using MOSFETs to dissipate excess charge as heat.
   - Only activates when **cell voltage difference exceeds 50mV**.
 
-- **State of Charge (SoC) Estimation**
+- ** SoC Estimation**
   - Uses a combination of **open circuit voltage (OCV) method** and **Coulomb counting**.
 
 ---
