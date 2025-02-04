@@ -31,7 +31,7 @@ graph TD;
 - **Microcontroller:** STM32F446RET (Cortex-M4)
 - **Voltage Measurement:** ADC + Voltage Dividers
 - **Current Measurement:** Hall Effect Sensor or Shunt Resistor
-- **Temperature Sensors:** NTC Thermistors or I2C-based sensors (e.g., TMP102)
+- **Temperature Sensors:** NTC Thermistors or I2C-based sensors (TMP102)
 - **Cell Balancing:** Passive balancing using MOSFETs
 - **Communication:** CAN Bus (ISO 11898 standard)
 - **Power Control:** MOSFETs for charge and discharge control
