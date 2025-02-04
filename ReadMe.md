@@ -18,10 +18,10 @@ The BMS consists of multiple subsystems that interact to ensure safe and efficie
 
 ```mermaid
 graph TD;
-    A[Main Control Unit (STM32F446)] --> B[Voltage Monitoring (ADC)];
-    A --> C[Current Monitoring (Shunt + ADC)];
-    A --> D[Temperature Monitoring (I2C)];
-    A --> E[Cell Balancing (MOSFETs)];
+    A[STM32F446] --> B[Voltage Monitoring ];
+    A --> C[Current Monitoring];
+    A --> D[Temperature Monitoring ];
+    A --> E[Cell Balancing];
     A --> F[Charge/Discharge Control];
     A --> G[Safety & Fault Management];
     A --> H[CAN Communication];
